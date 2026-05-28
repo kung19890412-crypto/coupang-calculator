@@ -1,0 +1,639 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>酷澎賣家利潤試算</title>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --bg: #f5f4f0;
+    --surface: #ffffff;
+    --surface2: #f0efe9;
+    --border: #e2e0d8;
+    --text: #1a1917;
+    --text2: #6b6960;
+    --text3: #9b9990;
+    --accent: #c0392b;
+    --accent2: #e74c3c;
+    --positive: #1a6b3c;
+    --negative: #c0392b;
+    --blue: #1a4a8a;
+    --blue-bg: #e8f0fa;
+  }
+
+  body {
+    font-family: 'Noto Sans TC', sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+    padding: 0;
+  }
+
+  header {
+    background: var(--accent);
+    padding: 1.25rem 1.5rem;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+
+  header .logo {
+    background: white;
+    color: var(--accent);
+    font-weight: 700;
+    font-size: 13px;
+    padding: 4px 10px;
+    border-radius: 4px;
+    letter-spacing: 0.5px;
+  }
+
+  header h1 {
+    color: white;
+    font-size: 16px;
+    font-weight: 500;
+    letter-spacing: 0.3px;
+  }
+
+  .container {
+    max-width: 480px;
+    margin: 0 auto;
+    padding: 1.25rem 1rem 2rem;
+  }
+
+  .card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 1.25rem;
+    margin-bottom: 1rem;
+  }
+
+  .card-title {
+    font-size: 12px;
+    font-weight: 700;
+    color: var(--text3);
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    margin-bottom: 1rem;
+    padding-bottom: 0.5rem;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .field {
+    margin-bottom: 1rem;
+  }
+
+  .field label {
+    display: block;
+    font-size: 13px;
+    color: var(--text2);
+    margin-bottom: 6px;
+    font-weight: 500;
+  }
+
+  .price-input-wrap {
+    display: flex;
+    align-items: center;
+    border: 1.5px solid var(--border);
+    border-radius: 8px;
+    overflow: hidden;
+    transition: border-color 0.2s;
+  }
+
+  .price-input-wrap:focus-within {
+    border-color: var(--accent);
+  }
+
+  .currency-badge {
+    background: var(--surface2);
+    padding: 0 12px;
+    height: 48px;
+    display: flex;
+    align-items: center;
+    font-size: 14px;
+    color: var(--text2);
+    font-weight: 500;
+    border-right: 1px solid var(--border);
+  }
+
+  input[type="number"] {
+    border: none;
+    outline: none;
+    font-family: inherit;
+    font-size: 20px;
+    font-weight: 700;
+    color: var(--text);
+    padding: 0 14px;
+    height: 48px;
+    width: 100%;
+    background: transparent;
+    -moz-appearance: textfield;
+  }
+
+  input[type="number"]::-webkit-outer-spin-button,
+  input[type="number"]::-webkit-inner-spin-button {
+    -webkit-appearance: none;
+  }
+
+  .seg-control {
+    display: flex;
+    background: var(--surface2);
+    border-radius: 8px;
+    padding: 3px;
+    gap: 3px;
+  }
+
+  .seg-control input { display: none; }
+
+  .seg-control label {
+    flex: 1;
+    text-align: center;
+    padding: 8px 6px;
+    font-size: 13px;
+    font-weight: 500;
+    color: var(--text2);
+    border-radius: 6px;
+    cursor: pointer;
+    transition: all 0.2s;
+    line-height: 1.4;
+    margin: 0;
+  }
+
+  .seg-control input:checked + label {
+    background: var(--surface);
+    color: var(--accent);
+    font-weight: 700;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.12);
+  }
+
+  .toggle-field {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 10px 0;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .toggle-field:last-child { border-bottom: none; }
+
+  .toggle-info { flex: 1; margin-right: 12px; }
+
+  .toggle-info .t-label {
+    font-size: 14px;
+    font-weight: 500;
+    color: var(--text);
+  }
+
+  .toggle-info .t-sub {
+    font-size: 12px;
+    color: var(--text3);
+    margin-top: 2px;
+  }
+
+  .switch {
+    position: relative;
+    width: 44px;
+    height: 26px;
+    flex-shrink: 0;
+  }
+
+  .switch input { opacity: 0; width: 0; height: 0; }
+
+  .sw-track {
+    position: absolute;
+    inset: 0;
+    background: var(--border);
+    border-radius: 13px;
+    cursor: pointer;
+    transition: background 0.25s;
+  }
+
+  .sw-track::after {
+    content: '';
+    position: absolute;
+    width: 20px;
+    height: 20px;
+    top: 3px;
+    left: 3px;
+    background: white;
+    border-radius: 50%;
+    transition: transform 0.25s;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.2);
+  }
+
+  .switch input:checked + .sw-track { background: var(--accent); }
+  .switch input:checked + .sw-track::after { transform: translateX(18px); }
+
+  .result-card {
+    background: var(--text);
+    border-radius: 12px;
+    padding: 1.25rem;
+    margin-bottom: 1rem;
+    color: white;
+  }
+
+  .result-main {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-end;
+    margin-bottom: 1rem;
+    padding-bottom: 1rem;
+    border-bottom: 1px solid rgba(255,255,255,0.15);
+  }
+
+  .result-main .r-label {
+    font-size: 13px;
+    color: rgba(255,255,255,0.6);
+    margin-bottom: 4px;
+  }
+
+  .result-main .r-value {
+    font-size: 32px;
+    font-weight: 700;
+    color: white;
+    letter-spacing: -0.5px;
+  }
+
+  .result-main .r-rate {
+    text-align: right;
+  }
+
+  .result-main .r-rate .r-label { text-align: right; }
+
+  .result-main .r-rate .r-pct {
+    font-size: 28px;
+    font-weight: 700;
+    color: #ff8a80;
+  }
+
+  .breakdown-list { list-style: none; }
+
+  .breakdown-list li {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 6px 0;
+    font-size: 13px;
+    color: rgba(255,255,255,0.7);
+    border-bottom: 1px solid rgba(255,255,255,0.08);
+  }
+
+  .breakdown-list li:last-child { border-bottom: none; }
+
+  .breakdown-list li .b-name { flex: 1; }
+
+  .breakdown-list li .b-amt {
+    color: #ff8a80;
+    font-weight: 500;
+    font-variant-numeric: tabular-nums;
+  }
+
+  .breakdown-list li .b-note {
+    font-size: 11px;
+    color: rgba(255,255,255,0.4);
+    margin-left: 6px;
+  }
+
+  .freight-note {
+    background: var(--blue-bg);
+    border-left: 3px solid var(--blue);
+    border-radius: 0 6px 6px 0;
+    padding: 8px 12px;
+    font-size: 12px;
+    color: var(--blue);
+    margin-top: 0.75rem;
+    line-height: 1.5;
+  }
+
+  .three-summary {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    margin-bottom: 1rem;
+  }
+
+  .sum-box {
+    flex: 1;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 0.875rem 0.75rem;
+    text-align: center;
+    min-width: 0;
+  }
+
+  .sum-deduct {
+    background: #fff5f5;
+    border-color: #ffc9c9;
+  }
+
+  .sum-net {
+    background: #f0faf4;
+    border-color: #a8e6bf;
+  }
+
+  .sum-label {
+    font-size: 11px;
+    color: var(--text3);
+    font-weight: 500;
+    margin-bottom: 4px;
+    white-space: nowrap;
+  }
+
+  .sum-value {
+    font-size: 17px;
+    font-weight: 700;
+    color: var(--text);
+    letter-spacing: -0.3px;
+  }
+
+  .sum-deduct .sum-value { color: var(--negative); }
+  .sum-net .sum-value { color: var(--positive); }
+
+  .sum-sub {
+    font-size: 11px;
+    color: var(--text3);
+    margin-top: 3px;
+    min-height: 14px;
+  }
+
+  .sum-arrow {
+    font-size: 16px;
+    color: var(--text3);
+    flex-shrink: 0;
+  }
+
+  .tag-always {
+    font-size: 11px;
+    font-weight: 600;
+    color: var(--text3);
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 20px;
+    padding: 3px 10px;
+    white-space: nowrap;
+    flex-shrink: 0;
+  }
+
+  .note-item {
+    display: flex;
+    gap: 10px;
+    padding: 10px 0;
+    border-bottom: 1px solid var(--border);
+    align-items: flex-start;
+  }
+
+  .note-icon {
+    font-size: 13px;
+    font-weight: 700;
+    color: var(--accent);
+    flex-shrink: 0;
+    margin-top: 1px;
+    min-width: 18px;
+  }
+
+  .note-text {
+    font-size: 13px;
+    color: var(--text2);
+    line-height: 1.6;
+  }
+
+  .note-text strong {
+    color: var(--text);
+  }
+
+  .footer {
+    text-align: center;
+    font-size: 11px;
+    color: var(--text3);
+    padding: 1rem 0;
+    line-height: 1.7;
+  }
+
+  @media (min-width: 500px) {
+    .container { padding: 1.5rem 1.5rem 2rem; }
+    header { padding: 1.25rem 2rem; }
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="logo">酷澎</div>
+  <h1>賣家利潤試算工具</h1>
+</header>
+
+<div class="container">
+
+  <div class="card">
+    <div class="card-title">商品資訊</div>
+
+    <div class="field">
+      <label>商品售價</label>
+      <div class="price-input-wrap">
+        <div class="currency-badge">NT$</div>
+        <input type="number" id="price" value="3600" min="0" step="10" inputmode="numeric">
+      </div>
+    </div>
+
+    <div class="field">
+      <label>賣家優惠券折扣（選填）</label>
+      <div class="price-input-wrap">
+        <div class="currency-badge">折</div>
+        <input type="number" id="coupon" value="0" min="0" step="10" inputmode="numeric" placeholder="0">
+      </div>
+      <div style="font-size:11px;color:var(--text3);margin-top:5px">折扣由賣家負擔，手續費以折後金額計算</div>
+    </div>
+
+    <div class="field">
+      <label>運送方式</label>
+      <div class="seg-control">
+        <input type="radio" name="ship" id="s-cvs" value="cvs" checked>
+        <label for="s-cvs">超商取貨<br><small style="font-weight:400;font-size:11px">運費 NT$45</small></label>
+        <input type="radio" name="ship" id="s-home" value="home">
+        <label for="s-home">宅配大榮<br><small style="font-weight:400;font-size:11px">運費 NT$65</small></label>
+      </div>
+    </div>
+  </div>
+
+
+
+  <div class="three-summary">
+    <div class="sum-box">
+      <div class="sum-label">客人付款金額</div>
+      <div class="sum-value" id="customerTotal">—</div>
+      <div class="sum-sub" id="customerSub"></div>
+    </div>
+    <div class="sum-arrow">→</div>
+    <div class="sum-box sum-deduct">
+      <div class="sum-label">平台扣除</div>
+      <div class="sum-value" id="totalDeductShow">—</div>
+      <div class="sum-sub" id="deductRate">—</div>
+    </div>
+    <div class="sum-arrow">→</div>
+    <div class="sum-box sum-net">
+      <div class="sum-label">實拿金額</div>
+      <div class="sum-value" id="netIncome">—</div>
+      <div class="sum-sub" id="netSub"></div>
+    </div>
+  </div>
+
+  <div class="result-card" id="resultCard">
+    <ul class="breakdown-list" id="breakdown"></ul>
+  </div>
+
+
+
+  <div class="freight-note" id="freightNote" style="display:none"></div>
+
+  <div class="card">
+    <div class="card-title">費用選項（非常態，需申請才啟用）</div>
+
+    <div class="toggle-field">
+      <div class="toggle-info">
+        <div class="t-label">成交手續費</div>
+        <div class="t-sub">固定收取，無法關閉</div>
+      </div>
+      <div class="tag-always">5.5% 常態</div>
+    </div>
+
+    <div class="toggle-field">
+      <div class="toggle-info">
+        <div class="t-label">金流／系統處理費</div>
+        <div class="t-sub">固定收取，無法關閉</div>
+      </div>
+      <div class="tag-always">2% 常態</div>
+    </div>
+
+    <div class="toggle-field">
+      <div class="toggle-info">
+        <div class="t-label">運費（超商 NT$45 ／ 宅配 NT$65）</div>
+        <div class="t-sub">免運門檻 NT$2,000，賣家負擔</div>
+      </div>
+      <div class="tag-always">常態</div>
+    </div>
+
+    <div class="toggle-field">
+      <div class="toggle-info">
+        <div class="t-label">代開發票服務費</div>
+        <div class="t-sub">每筆訂單 NT$2，需向酷澎申請</div>
+      </div>
+      <label class="switch">
+        <input type="checkbox" id="invoice">
+        <span class="sw-track"></span>
+      </label>
+    </div>
+
+    <div class="toggle-field">
+      <div class="toggle-info">
+        <div class="t-label">運費補貼專案</div>
+        <div class="t-sub">額外收取成交金額 7%，需申請加入</div>
+      </div>
+      <label class="switch">
+        <input type="checkbox" id="subsidy">
+        <span class="sw-track"></span>
+      </label>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-title">📋 注意事項</div>
+    <div class="note-item">
+      <div class="note-icon">①</div>
+      <div class="note-text"><strong>商品單價超過 NT$35,000</strong>：成交手續費上限以 NT$35,000 計算，超過部分不再抽成。</div>
+    </div>
+    <div class="note-item">
+      <div class="note-icon">②</div>
+      <div class="note-text"><strong>賣家優惠券折扣</strong>：折扣金額由賣家負擔，手續費以折後實際成交金額計算。</div>
+    </div>
+    <div class="note-item">
+      <div class="note-icon">③</div>
+      <div class="note-text"><strong>退貨運費</strong>：15天鑑賞期內不論任何退貨原因，來回運費均由賣家負擔。</div>
+    </div>
+    <div class="note-item" style="border-bottom:none">
+      <div class="note-icon">④</div>
+      <div class="note-text"><strong>酷澎幣折抵</strong>：顧客使用酷澎幣折抵，視同現金，照常計入手續費計算基礎，不予扣除。</div>
+    </div>
+  </div>
+
+  <div class="footer">
+    費率依據：成交手續費 5.5% ＋ 金流處理費 2%<br>
+    資料僅供參考，實際結算以酷澎平台為準
+  </div>
+
+</div>
+
+<script>
+function fmt(n){ return 'NT$ ' + Math.round(n).toLocaleString('zh-TW'); }
+
+function calc(){
+  const price = parseFloat(document.getElementById('price').value) || 0;
+  const coupon = parseFloat(document.getElementById('coupon').value) || 0;
+  const discountedPrice = Math.max(0, price - coupon);
+  const ship = document.querySelector('input[name="ship"]:checked').value;
+  const freeShip = true;
+  const invoice = document.getElementById('invoice').checked;
+  const subsidy = document.getElementById('subsidy').checked;
+
+  const freight = ship === 'cvs' ? 45 : 65;
+  const shipLabel = ship === 'cvs' ? '超商' : '宅配大榮';
+  const sellerPaysFreight = freeShip && price >= 2000;
+  const customerPaysFreight = !sellerPaysFreight;
+
+  const commission = Math.round(discountedPrice * 0.055);
+  const paymentGoods = Math.round(discountedPrice * 0.02);
+  const customerFreight = customerPaysFreight ? freight : 0;
+  const paymentFreight = Math.round(customerFreight * 0.02);
+  const subsidyFee = subsidy ? Math.round(price * 0.07) : 0;
+  const invoiceFee = invoice ? 2 : 0;
+  const freightCost = sellerPaysFreight ? freight : 0;
+
+  const totalDeduct = commission + paymentGoods + paymentFreight + subsidyFee + invoiceFee + freightCost;
+  const netIncome = discountedPrice - totalDeduct;
+  const deductRate = discountedPrice > 0 ? ((totalDeduct / discountedPrice) * 100).toFixed(1) : 0;
+
+  const customerTotal = customerPaysFreight ? discountedPrice + freight : discountedPrice;
+
+  document.getElementById('customerTotal').textContent = fmt(customerTotal);
+  document.getElementById('customerSub').textContent = customerPaysFreight ? '含運費 NT$' + freight : '含免運';
+  document.getElementById('totalDeductShow').textContent = fmt(totalDeduct);
+  document.getElementById('deductRate').textContent = deductRate + '%';
+  document.getElementById('netIncome').textContent = fmt(netIncome);
+  document.getElementById('netSub').textContent = '扣除率 ' + deductRate + '%';
+
+  let rows = '';
+  if(coupon > 0) rows += `<li><span class="b-name">賣家優惠券折扣</span><span class="b-note">賣家負擔</span><span class="b-amt">－${coupon.toLocaleString()}</span></li>`;
+  rows += `<li><span class="b-name">成交手續費</span><span class="b-note">5.5%</span><span class="b-amt">－${Math.round(commission).toLocaleString()}</span></li>`;
+  rows += `<li><span class="b-name">金流處理費（商品）</span><span class="b-note">2%</span><span class="b-amt">－${paymentGoods.toLocaleString()}</span></li>`;
+  if(paymentFreight > 0) rows += `<li><span class="b-name">金流處理費（運費）</span><span class="b-note">2%</span><span class="b-amt">－${paymentFreight.toLocaleString()}</span></li>`;
+  if(subsidyFee > 0) rows += `<li><span class="b-name">運費補貼專案服務費</span><span class="b-note">7%</span><span class="b-amt">－${subsidyFee.toLocaleString()}</span></li>`;
+  if(invoiceFee > 0) rows += `<li><span class="b-name">代開發票服務費</span><span class="b-note">每筆</span><span class="b-amt">－${invoiceFee.toLocaleString()}</span></li>`;
+  if(freightCost > 0) rows += `<li><span class="b-name">${shipLabel}運費（賣家負擔）</span><span class="b-note">固定</span><span class="b-amt">－${freightCost.toLocaleString()}</span></li>`;
+  if(customerPaysFreight) rows += `<li><span class="b-name">${shipLabel}運費（顧客支付）</span><span class="b-note">不扣賣家</span><span class="b-amt" style="color:rgba(255,255,255,0.45)">NT$ ${freight}</span></li>`;
+  rows += `<li style="border-top:1px solid rgba(255,255,255,0.2);padding-top:10px;margin-top:4px"><span class="b-name" style="font-weight:700;color:white">總扣除</span><span class="b-amt" style="color:white;font-weight:700">－${totalDeduct.toLocaleString()}</span></li>`;
+
+  document.getElementById('breakdown').innerHTML = rows;
+
+  const noteEl = document.getElementById('freightNote');
+  if(sellerPaysFreight){
+    noteEl.style.display = 'block';
+    noteEl.textContent = `✅ 售價 NT$${price.toLocaleString()} 已達免運門檻 NT$2,000，${shipLabel}運費 NT$${freight} 由賣家負擔，已計入扣除。`;
+  } else {
+    noteEl.style.display = 'block';
+    noteEl.textContent = `⚠️ 售價 NT$${price.toLocaleString()} 未達免運門檻 NT$2,000，運費 NT$${freight} 由顧客支付，不計入賣家扣除。`;
+  }
+}
+
+document.getElementById('price').addEventListener('input', calc);
+document.getElementById('coupon').addEventListener('input', calc);
+document.querySelectorAll('input[name="ship"]').forEach(r => r.addEventListener('change', calc));
+document.getElementById('invoice').addEventListener('change', calc);
+document.getElementById('subsidy').addEventListener('change', calc);
+
+calc();
+</script>
+</body>
+</html>
